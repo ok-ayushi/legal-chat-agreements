@@ -9,7 +9,178 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      contracts: {
+        Row: {
+          amount: number | null
+          buyer_approved: boolean | null
+          buyer_id: string | null
+          cancellation_policy: string | null
+          created_at: string
+          deliverables: string | null
+          description: string | null
+          dispute_resolution: string | null
+          id: string
+          legal_terms: string | null
+          payment_terms: string | null
+          property_type: string | null
+          seller_approved: boolean | null
+          seller_id: string | null
+          status: string | null
+          timeline: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          amount?: number | null
+          buyer_approved?: boolean | null
+          buyer_id?: string | null
+          cancellation_policy?: string | null
+          created_at?: string
+          deliverables?: string | null
+          description?: string | null
+          dispute_resolution?: string | null
+          id?: string
+          legal_terms?: string | null
+          payment_terms?: string | null
+          property_type?: string | null
+          seller_approved?: boolean | null
+          seller_id?: string | null
+          status?: string | null
+          timeline?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number | null
+          buyer_approved?: boolean | null
+          buyer_id?: string | null
+          cancellation_policy?: string | null
+          created_at?: string
+          deliverables?: string | null
+          description?: string | null
+          dispute_resolution?: string | null
+          id?: string
+          legal_terms?: string | null
+          payment_terms?: string | null
+          property_type?: string | null
+          seller_approved?: boolean | null
+          seller_id?: string | null
+          status?: string | null
+          timeline?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      messages: {
+        Row: {
+          content: string
+          contract_id: string | null
+          created_at: string
+          id: string
+          message_type: string | null
+          sender_id: string | null
+          sender_type: string
+        }
+        Insert: {
+          content: string
+          contract_id?: string | null
+          created_at?: string
+          id?: string
+          message_type?: string | null
+          sender_id?: string | null
+          sender_type: string
+        }
+        Update: {
+          content?: string
+          contract_id?: string | null
+          created_at?: string
+          id?: string
+          message_type?: string | null
+          sender_id?: string | null
+          sender_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          email: string | null
+          full_name: string | null
+          id: string
+          role: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id: string
+          role?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          role?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      signatures: {
+        Row: {
+          contract_id: string | null
+          id: string
+          signature_data: string
+          signed_at: string
+          signer_location: string | null
+          signer_name: string
+          signer_title: string | null
+          user_id: string | null
+          user_type: string
+        }
+        Insert: {
+          contract_id?: string | null
+          id?: string
+          signature_data: string
+          signed_at?: string
+          signer_location?: string | null
+          signer_name: string
+          signer_title?: string | null
+          user_id?: string | null
+          user_type: string
+        }
+        Update: {
+          contract_id?: string | null
+          id?: string
+          signature_data?: string
+          signed_at?: string
+          signer_location?: string | null
+          signer_name?: string
+          signer_title?: string | null
+          user_id?: string | null
+          user_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "signatures_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
