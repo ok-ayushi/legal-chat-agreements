@@ -1,10 +1,10 @@
-
 import React, { useState, useRef } from 'react';
 import { PenTool, Check, RotateCcw, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import jsPDF from 'jspdf';
 
 interface ESignatureProps {
   currentUser: 'buyer' | 'seller';
@@ -84,36 +84,85 @@ const ESignature = ({ currentUser, contractData, onSignatureComplete }: ESignatu
     }
   };
 
-  const downloadSignedContract = () => {
-    // Create a comprehensive contract document
-    const contractContent = `
-LEGAL AGREEMENT CONTRACT
-
-Contract Title: ${contractData.title}
-Property Type: ${contractData.propertyType}
-Transaction Amount: $${contractData.amount}
-Timeline: ${contractData.timeline}
-
-SIGNER INFORMATION:
-Full Name: ${signerInfo.fullName}
-Title: ${signerInfo.title}
-Date: ${signerInfo.date}
-Location: ${signerInfo.location}
-Role: ${currentUser.charAt(0).toUpperCase() + currentUser.slice(1)}
-Signature Date: ${new Date().toLocaleString()}
-
-This contract has been digitally signed and is legally binding.
-    `;
-
-    const blob = new Blob([contractContent], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `${contractData.title}_Signed_Contract_${currentUser}.txt`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+  const downloadSignedContractPDF = () => {
+    const doc = new jsPDF();
+    
+    // Header
+    doc.setFontSize(20);
+    doc.setFont('helvetica', 'bold');
+    doc.text('LEGAL AGREEMENT CONTRACT', 105, 20, { align: 'center' });
+    
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'normal');
+    doc.text('Legally Binding Property Transaction Agreement', 105, 30, { align: 'center' });
+    
+    // Contract Details
+    let yPosition = 50;
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.text('TRANSACTION DETAILS', 20, yPosition);
+    
+    yPosition += 10;
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Contract Title: ${contractData.title}`, 20, yPosition);
+    yPosition += 8;
+    doc.text(`Property Type: ${contractData.propertyType}`, 20, yPosition);
+    yPosition += 8;
+    doc.text(`Transaction Amount: $${contractData.amount}`, 20, yPosition);
+    yPosition += 8;
+    doc.text(`Timeline: ${contractData.timeline}`, 20, yPosition);
+    
+    yPosition += 15;
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.text('DESCRIPTION & TERMS', 20, yPosition);
+    
+    yPosition += 10;
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Description: ${contractData.description || 'Not specified'}`, 20, yPosition);
+    yPosition += 8;
+    doc.text(`Payment Terms: ${contractData.paymentTerms || 'Not specified'}`, 20, yPosition);
+    yPosition += 8;
+    doc.text(`Legal Terms: ${contractData.legalTerms || 'Standard terms apply'}`, 20, yPosition);
+    
+    // Signature Section
+    yPosition += 25;
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.text('DIGITAL SIGNATURE', 20, yPosition);
+    
+    yPosition += 10;
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Signed by: ${signerInfo.fullName}`, 20, yPosition);
+    yPosition += 8;
+    doc.text(`Title: ${signerInfo.title || 'N/A'}`, 20, yPosition);
+    yPosition += 8;
+    doc.text(`Date: ${signerInfo.date}`, 20, yPosition);
+    yPosition += 8;
+    doc.text(`Location: ${signerInfo.location || 'Not specified'}`, 20, yPosition);
+    yPosition += 8;
+    doc.text(`Role: ${currentUser.charAt(0).toUpperCase() + currentUser.slice(1)}`, 20, yPosition);
+    yPosition += 8;
+    doc.text(`Signature Date: ${new Date().toLocaleString()}`, 20, yPosition);
+    
+    // Add signature image if available
+    const canvas = canvasRef.current;
+    if (canvas) {
+      const signatureDataURL = canvas.toDataURL('image/png');
+      doc.addImage(signatureDataURL, 'PNG', 20, yPosition + 10, 80, 30);
+    }
+    
+    // Footer
+    yPosition += 50;
+    doc.setFontSize(8);
+    doc.text('This document has been digitally signed and is legally binding under applicable law.', 20, yPosition);
+    doc.text(`Document generated on: ${new Date().toLocaleString()}`, 20, yPosition + 5);
+    
+    // Save the PDF
+    doc.save(`${contractData.title}_Signed_Contract_${currentUser}.pdf`);
   };
 
   return (
@@ -246,9 +295,9 @@ This contract has been digitally signed and is legally binding.
               <p><strong>Date:</strong> {signerInfo.date}</p>
               <p><strong>Role:</strong> {currentUser.charAt(0).toUpperCase() + currentUser.slice(1)}</p>
             </div>
-            <Button onClick={downloadSignedContract} className="bg-blue-600 hover:bg-blue-700">
+            <Button onClick={downloadSignedContractPDF} className="bg-blue-600 hover:bg-blue-700">
               <Download className="h-4 w-4 mr-2" />
-              Download Signed Contract
+              Download Signed Contract (PDF)
             </Button>
           </CardContent>
         </Card>

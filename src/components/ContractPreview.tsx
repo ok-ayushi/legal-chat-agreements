@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { FileText, Check, X, AlertTriangle, Camera, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -16,7 +15,6 @@ interface ContractPreviewProps {
 }
 
 const ContractPreview = ({ orderData, currentUser, onApprove, onReject }: ContractPreviewProps) => {
-  const [isApproved, setIsApproved] = useState(false);
   const [approvalStatus, setApprovalStatus] = useState<{
     buyer: boolean;
     seller: boolean;
@@ -27,12 +25,16 @@ const ContractPreview = ({ orderData, currentUser, onApprove, onReject }: Contra
   const [passportPhoto, setPassportPhoto] = useState<string | null>(null);
 
   const handleApproval = () => {
-    setApprovalStatus(prev => ({
-      ...prev,
+    const newApprovalStatus = {
+      ...approvalStatus,
       [currentUser]: true
-    }));
-    setIsApproved(true);
-    onApprove();
+    };
+    setApprovalStatus(newApprovalStatus);
+    
+    // Only call onApprove if both parties have approved
+    if (newApprovalStatus.buyer && newApprovalStatus.seller) {
+      onApprove();
+    }
   };
 
   const handlePhotoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -78,6 +80,9 @@ const ContractPreview = ({ orderData, currentUser, onApprove, onReject }: Contra
       ]
     }
   ];
+
+  const bothPartiesApproved = approvalStatus.buyer && approvalStatus.seller;
+  const currentUserApproved = approvalStatus[currentUser];
 
   return (
     <div className="max-w-4xl mx-auto p-6 space-y-6">
@@ -184,7 +189,7 @@ const ContractPreview = ({ orderData, currentUser, onApprove, onReject }: Contra
         </CardContent>
       </Card>
 
-      {!isApproved ? (
+      {!currentUserApproved ? (
         <Card>
           <CardContent className="p-6">
             <div className="text-center space-y-4">
@@ -214,15 +219,27 @@ const ContractPreview = ({ orderData, currentUser, onApprove, onReject }: Contra
             </div>
           </CardContent>
         </Card>
-      ) : (
+      ) : bothPartiesApproved ? (
         <Card className="border-green-200 bg-green-50">
           <CardContent className="p-6 text-center">
             <Check className="h-12 w-12 text-green-600 mx-auto mb-4" />
             <h3 className="text-lg font-semibold text-green-800">
-              Contract Approved Successfully!
+              Both Parties Approved - Ready for Signature!
             </h3>
             <p className="text-green-700">
-              Your approval has been recorded. Waiting for the other party to approve.
+              Both buyer and seller have approved the contract. You can now proceed to sign the document.
+            </p>
+          </CardContent>
+        </Card>
+      ) : (
+        <Card className="border-blue-200 bg-blue-50">
+          <CardContent className="p-6 text-center">
+            <Check className="h-12 w-12 text-blue-600 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-blue-800">
+              Your Approval Recorded
+            </h3>
+            <p className="text-blue-700">
+              Waiting for {currentUser === 'buyer' ? 'seller' : 'buyer'} approval before proceeding to signature.
             </p>
           </CardContent>
         </Card>
