@@ -84,6 +84,38 @@ const ESignature = ({ currentUser, contractData, onSignatureComplete }: ESignatu
     }
   };
 
+  const downloadSignedContract = () => {
+    // Create a comprehensive contract document
+    const contractContent = `
+LEGAL AGREEMENT CONTRACT
+
+Contract Title: ${contractData.title}
+Property Type: ${contractData.propertyType}
+Transaction Amount: $${contractData.amount}
+Timeline: ${contractData.timeline}
+
+SIGNER INFORMATION:
+Full Name: ${signerInfo.fullName}
+Title: ${signerInfo.title}
+Date: ${signerInfo.date}
+Location: ${signerInfo.location}
+Role: ${currentUser.charAt(0).toUpperCase() + currentUser.slice(1)}
+Signature Date: ${new Date().toLocaleString()}
+
+This contract has been digitally signed and is legally binding.
+    `;
+
+    const blob = new Blob([contractContent], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${contractData.title}_Signed_Contract_${currentUser}.txt`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="max-w-4xl mx-auto p-6 space-y-6">
       <div className="text-center">
@@ -209,12 +241,12 @@ const ESignature = ({ currentUser, contractData, onSignatureComplete }: ESignatu
             <p className="text-green-700 mb-4">
               Your digital signature has been recorded and the contract is now legally binding.
             </p>
-            <div className="space-y-2 text-sm text-green-700">
+            <div className="space-y-2 text-sm text-green-700 mb-6">
               <p><strong>Signed by:</strong> {signerInfo.fullName}</p>
               <p><strong>Date:</strong> {signerInfo.date}</p>
               <p><strong>Role:</strong> {currentUser.charAt(0).toUpperCase() + currentUser.slice(1)}</p>
             </div>
-            <Button className="mt-4" variant="outline">
+            <Button onClick={downloadSignedContract} className="bg-blue-600 hover:bg-blue-700">
               <Download className="h-4 w-4 mr-2" />
               Download Signed Contract
             </Button>

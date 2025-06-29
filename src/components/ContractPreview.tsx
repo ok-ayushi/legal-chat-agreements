@@ -1,10 +1,12 @@
 
 import React, { useState } from 'react';
-import { FileText, Check, X, AlertTriangle } from 'lucide-react';
+import { FileText, Check, X, AlertTriangle, Camera, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 interface ContractPreviewProps {
   orderData: any;
@@ -22,6 +24,7 @@ const ContractPreview = ({ orderData, currentUser, onApprove, onReject }: Contra
     buyer: false,
     seller: false
   });
+  const [passportPhoto, setPassportPhoto] = useState<string | null>(null);
 
   const handleApproval = () => {
     setApprovalStatus(prev => ({
@@ -30,6 +33,17 @@ const ContractPreview = ({ orderData, currentUser, onApprove, onReject }: Contra
     }));
     setIsApproved(true);
     onApprove();
+  };
+
+  const handlePhotoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setPassportPhoto(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const contractSections = [
@@ -94,10 +108,45 @@ const ContractPreview = ({ orderData, currentUser, onApprove, onReject }: Contra
 
       <Card className="border-2">
         <CardHeader className="bg-gray-50">
-          <CardTitle className="text-center">Legal Agreement Contract</CardTitle>
-          <p className="text-center text-sm text-gray-600">
-            This contract is legally binding upon approval by both parties
-          </p>
+          <div className="flex justify-between items-start">
+            <div className="flex-1">
+              <CardTitle className="text-center">Legal Agreement Contract</CardTitle>
+              <p className="text-center text-sm text-gray-600">
+                This contract is legally binding upon approval by both parties
+              </p>
+            </div>
+            <div className="ml-4">
+              <div className="w-24 h-32 border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center bg-white">
+                {passportPhoto ? (
+                  <img 
+                    src={passportPhoto} 
+                    alt="Passport Photo" 
+                    className="w-full h-full object-cover rounded-lg"
+                  />
+                ) : (
+                  <>
+                    <Camera className="h-8 w-8 text-gray-400 mb-2" />
+                    <span className="text-xs text-gray-500 text-center">Passport Photo</span>
+                  </>
+                )}
+              </div>
+              <div className="mt-2">
+                <Input
+                  id="passport-photo"
+                  type="file"
+                  accept="image/*"
+                  onChange={handlePhotoUpload}
+                  className="hidden"
+                />
+                <Label htmlFor="passport-photo" className="cursor-pointer">
+                  <Button variant="outline" size="sm" className="w-full text-xs">
+                    <Upload className="h-3 w-3 mr-1" />
+                    Upload
+                  </Button>
+                </Label>
+              </div>
+            </div>
+          </div>
         </CardHeader>
         <CardContent className="p-6">
           {contractSections.map((section, index) => (
