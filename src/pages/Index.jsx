@@ -1,14 +1,16 @@
+
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { MessageSquare, FileText, Upload, PenTool, Shield, Users, LogOut } from 'lucide-react';
+import { MessageSquare, FileText, Upload, PenTool, Shield, Users, LogOut, Home } from 'lucide-react';
 import MessageInterface from '@/components/MessageInterface';
 import OrderCreation from '@/components/OrderCreation';
 import DocumentUpload from '@/components/DocumentUpload';
 import ContractPreview from '@/components/ContractPreview';
 import ESignature from '@/components/ESignature';
+import PropertyListing from '@/components/PropertyListing';
 import AuthPage from '@/components/AuthPage';
 import { useAuth } from '@/hooks/useAuth';
 import { useContracts } from '@/hooks/useContracts';
@@ -19,7 +21,7 @@ const Index = () => {
   const { contracts } = useContracts();
   const { toast } = useToast();
   const [currentUser, setCurrentUser] = useState('buyer');
-  const [currentView, setCurrentView] = useState('messaging');
+  const [currentView, setCurrentView] = useState('properties');
   const [selectedContract, setSelectedContract] = useState(null);
 
   const handleSignOut = async () => {
@@ -29,6 +31,11 @@ const Index = () => {
         title: 'Error',
         description: 'Failed to sign out',
         variant: 'destructive',
+      });
+    } else {
+      toast({
+        title: 'Success',
+        description: 'You have been signed out successfully',
       });
     }
   };
@@ -52,14 +59,24 @@ const Index = () => {
       title: 'Success',
       description: 'Contract signed successfully!',
     });
+    setCurrentView('properties');
+  };
+
+  const handlePropertyCreated = (propertyData) => {
+    setSelectedContract(propertyData);
+    toast({
+      title: 'Success',
+      description: 'Property listed successfully!',
+    });
   };
 
   const getProgressStep = () => {
     switch (currentView) {
-      case 'messaging': return 1;
-      case 'order': return 2;
-      case 'contract': return 3;
-      case 'signature': return 4;
+      case 'properties': return 1;
+      case 'messaging': return 2;
+      case 'order': return 3;
+      case 'contract': return 4;
+      case 'signature': return 5;
       default: return 1;
     }
   };
@@ -83,7 +100,7 @@ const Index = () => {
     return (
       <OrderCreation
         currentUser={currentUser}
-        onBack={() => setCurrentView('messaging')}
+        onBack={() => setCurrentView('properties')}
         onCreateOrder={handleOrderCreated}
       />
     );
@@ -95,7 +112,7 @@ const Index = () => {
         orderData={selectedContract}
         currentUser={currentUser}
         onApprove={handleContractApproved}
-        onReject={() => setCurrentView('messaging')}
+        onReject={() => setCurrentView('properties')}
       />
     );
   }
@@ -134,7 +151,7 @@ const Index = () => {
               </div>
               <div className="flex items-center space-x-2">
                 <Users className="h-4 w-4" />
-                <span className="text-sm">Switch Role:</span>
+                <span className="text-sm">Role:</span>
                 <Button
                   variant={currentUser === 'buyer' ? 'default' : 'outline'}
                   size="sm"
@@ -157,21 +174,27 @@ const Index = () => {
           <div className="pb-4">
             <div className="flex items-center justify-center space-x-4">
               {[
-                { step: 1, label: 'Messaging', icon: MessageSquare },
-                { step: 2, label: 'Create Order', icon: FileText },
-                { step: 3, label: 'Review Contract', icon: Upload },
-                { step: 4, label: 'E-Signature', icon: PenTool }
+                { step: 1, label: 'Properties', icon: Home },
+                { step: 2, label: 'Messaging', icon: MessageSquare },
+                { step: 3, label: 'Create Order', icon: FileText },
+                { step: 4, label: 'Review Contract', icon: Upload },
+                { step: 5, label: 'E-Signature', icon: PenTool }
               ].map(({ step, label, icon: Icon }) => (
                 <div key={step} className="flex items-center">
-                  <div className={`flex items-center space-x-2 px-3 py-1 rounded-full ${
+                  <div className={`flex items-center space-x-2 px-3 py-1 rounded-full cursor-pointer transition-colors ${
                     getProgressStep() >= step 
                       ? 'bg-blue-100 text-blue-700' 
-                      : 'bg-gray-100 text-gray-500'
-                  }`}>
+                      : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                  }`}
+                  onClick={() => {
+                    if (step === 1) setCurrentView('properties');
+                    if (step === 2) setCurrentView('messaging');
+                  }}
+                  >
                     <Icon className="h-4 w-4" />
                     <span className="text-sm font-medium">{label}</span>
                   </div>
-                  {step < 4 && (
+                  {step < 5 && (
                     <div className={`w-8 h-px mx-2 ${
                       getProgressStep() > step ? 'bg-blue-300' : 'bg-gray-300'
                     }`}></div>
@@ -185,9 +208,21 @@ const Index = () => {
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <Tabs defaultValue="messaging" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="messaging" className="flex items-center space-x-2">
+        <Tabs value={currentView === 'properties' ? 'properties' : 'messaging'} className="w-full">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger 
+              value="properties" 
+              className="flex items-center space-x-2"
+              onClick={() => setCurrentView('properties')}
+            >
+              <Home className="h-4 w-4" />
+              <span>Properties</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="messaging" 
+              className="flex items-center space-x-2"
+              onClick={() => setCurrentView('messaging')}
+            >
               <MessageSquare className="h-4 w-4" />
               <span>Messaging</span>
             </TabsTrigger>
@@ -200,6 +235,13 @@ const Index = () => {
               <span>Overview</span>
             </TabsTrigger>
           </TabsList>
+
+          <TabsContent value="properties" className="mt-6">
+            <PropertyListing
+              currentUser={currentUser}
+              onCreateContract={handlePropertyCreated}
+            />
+          </TabsContent>
 
           <TabsContent value="messaging" className="mt-6">
             <Card className="h-[600px]">
@@ -219,13 +261,33 @@ const Index = () => {
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center">
+                    <Home className="h-5 w-5 mr-2 text-blue-600" />
+                    Properties
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-gray-600 mb-4">
+                    Browse and list properties with secure transaction capabilities.
+                  </p>
+                  <div className="flex justify-between items-center">
+                    <Badge variant="secondary">{contracts.length} Listed</Badge>
+                    <Button variant="outline" size="sm" onClick={() => setCurrentView('properties')}>
+                      View Properties
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center">
                     <MessageSquare className="h-5 w-5 mr-2 text-blue-600" />
                     Communication
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p className="text-gray-600 mb-4">
-                    Secure messaging between buyer and seller with file sharing capabilities.
+                    Secure messaging between buyers and sellers with file sharing.
                   </p>
                   <Badge variant="secondary">Active</Badge>
                 </CardContent>
@@ -271,6 +333,7 @@ const Index = () => {
                   <div>
                     <h4 className="font-semibold mb-2">For Buyers</h4>
                     <ul className="space-y-1 text-sm text-gray-600">
+                      <li>• Browse available properties</li>
                       <li>• Secure document upload and sharing</li>
                       <li>• Create purchase orders with legal terms</li>
                       <li>• Digital signature capabilities</li>
@@ -280,6 +343,7 @@ const Index = () => {
                   <div>
                     <h4 className="font-semibold mb-2">For Sellers</h4>
                     <ul className="space-y-1 text-sm text-gray-600">
+                      <li>• List properties with detailed information</li>
                       <li>• Property listing and documentation</li>
                       <li>• Create sales agreements with custom terms</li>
                       <li>• Secure client communication</li>
